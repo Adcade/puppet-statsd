@@ -39,7 +39,7 @@ class statsd::graphite {
   ['/opt/graphite/storage', '/opt/graphite/storage/log', '/opt/graphite/storage/log/webapp']:
     ensure  => directory,
     require => File['storage-schemas.conf'],
-    mode    => 766;
+    mode    => 777;
   'carbon.conf':
     ensure  => file,
     source  => '/opt/graphite/conf/carbon.conf.example',
@@ -58,12 +58,12 @@ class statsd::graphite {
     require => File['local_settings.py']
   }
 
-  #file { 'graphite.db':
-  #  ensure => present,
-  #  owner  => 'nobody',
-  #  group  => 'nobody',
-  #  path   => '/opt/graphite/storage/graphite.db',
-  #}
+  file { 'graphite.db':
+    ensure => present,
+    owner  => 'www-data',
+    group  => 'www-data',
+    path   => '/opt/graphite/storage/graphite.db',
+  }
 
   exec { 'carbon-cache':
     command => 'python ./bin/carbon-cache.py start',
