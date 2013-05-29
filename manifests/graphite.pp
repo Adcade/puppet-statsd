@@ -17,39 +17,39 @@ class statsd::graphite {
   } ->
 
   package {
-  'django':
-    provider => 'pip',
-    ensure   => '1.3';
-  ['python-memcached',
-   'django-tagging',
-   'twisted',
-   'carbon',
-   'whisper',
-   'graphite-web']:
-    provider => 'pip',
-    ensure   => latest;
+    'django':
+      provider => 'pip',
+      ensure   => '1.3';
+    ['python-memcached',
+     'django-tagging',
+     'twisted',
+     'carbon',
+     'whisper',
+     'graphite-web']:
+      provider => 'pip',
+      ensure   => latest;
   }
 
   file {
-  'storage-schemas.conf':
-    ensure  => file,
-    path    => '/opt/graphite/conf/storage-schemas.conf',
-    require => Package['carbon', 'graphite-web', 'whisper'],
-    content => template('statsd/storage-schemas.conf.erb');
-  ['/opt/graphite/storage', '/opt/graphite/storage/log', '/opt/graphite/storage/log/webapp']:
-    ensure  => directory,
-    require => File['storage-schemas.conf'],
-    mode    => 777;
-  'carbon.conf':
-    ensure  => file,
-    source  => '/opt/graphite/conf/carbon.conf.example',
-    path    => '/opt/graphite/conf/carbon.conf',
-    require => Package['carbon'];
-  'local_settings.py':
-    ensure  => file,
-    source  => '/opt/graphite/webapp/graphite/local_settings.py.example',
-    path    => '/opt/graphite/webapp/graphite/local_settings.py',
-    require => Package['carbon', 'graphite-web', 'whisper'];
+    'storage-schemas.conf':
+      ensure  => file,
+      path    => '/opt/graphite/conf/storage-schemas.conf',
+      require => Package['carbon', 'graphite-web', 'whisper'],
+      content => template('statsd/storage-schemas.conf.erb');
+    ['/opt/graphite/storage', '/opt/graphite/storage/log', '/opt/graphite/storage/log/webapp']:
+      ensure  => directory,
+      require => File['storage-schemas.conf'],
+      mode    => 777;
+    'carbon.conf':
+      ensure  => file,
+      source  => '/opt/graphite/conf/carbon.conf.example',
+      path    => '/opt/graphite/conf/carbon.conf',
+      require => Package['carbon'];
+    'local_settings.py':
+      ensure  => file,
+      source  => '/opt/graphite/webapp/graphite/local_settings.py.example',
+      path    => '/opt/graphite/webapp/graphite/local_settings.py',
+      require => Package['carbon', 'graphite-web', 'whisper'];
   }
 
   exec { 'init db':
@@ -85,23 +85,26 @@ class statsd::graphite {
   }
 
   file {
-  'graphite.nginx':
-    ensure  => file,
-    path    => '/etc/nginx/sites-available/graphite',
-    content => template('statsd/graphite.nginx.erb'),
-    require => Package['nginx'];
-  #'uwsgi_params':
-  #  ensure  => file,
-  #  path    => '/etc/nginx/uwsgi_params',
-  #  content => template('statsd/uwsgi_params.erb'),
-  #  require => Package['nginx'];
+    'graphite.nginx':
+      ensure  => file,
+      path    => '/etc/nginx/sites-available/graphite',
+      content => template('statsd/graphite.nginx.erb'),
+      require => Package['nginx'];
+    #'uwsgi_params':
+    #  ensure  => file,
+    #  path    => '/etc/nginx/uwsgi_params',
+    #  content => template('statsd/uwsgi_params.erb'),
+    #  require => Package['nginx'];
   } ->
 
   file {
-  'enable nginx site':
-    ensure => link,
-    path   => '/etc/nginx/sites-enabled/graphite',
-    source => '/etc/nginx/sites-available/graphite';
+    'enable nginx graphite site':
+      ensure => link,
+      path   => '/etc/nginx/sites-enabled/graphite',
+      source => '/etc/nginx/sites-available/graphite';
+    'disable nginx default site':
+      ensure => absent,
+      path   => '/etc/nginx/sites-enabled/default';
   } ->
 
   service {'nginx':
