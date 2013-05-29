@@ -1,0 +1,35 @@
+# statsd upstart based on etsy/statsd/debian
+# 2013 - yh@adcade.com
+#
+description "statsd"
+author      "etsy"
+author      "Yangming Huang"
+
+respawn limit 15 5
+oom never
+
+start on (local-filesystems
+  and net-device-up IFACE!=lo)
+stop on shutdown
+
+respawn
+
+pre-start script
+end script
+
+script
+  PID=/var/run/statsd.pid
+  USER=statsd
+  PATH=$PATH:/usr/local/bin:/usr/bin:/bin
+  NODE_BIN=$(which nodejs||which node)
+  if [ ! -x "$NODE_BIN" ]; then
+    echo "Can't find executable nodejs or node in PATH=$PATH"
+    exit 1
+  fi
+
+  chdir /opt/statsd
+  exec su -s /bin/sh -c "${NODE_BIN} stats.js /etc/statsd/localConfig.js" $USER > /var/log/statsd/statsd.log
+end script
+
+post-stop script
+end script
