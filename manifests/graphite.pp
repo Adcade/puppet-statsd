@@ -20,14 +20,18 @@ class statsd::graphite {
     'django':
       provider => 'pip',
       ensure   => '1.3';
+    'twisted':
+      provider => 'pip',
+      ensure   => '13.1.0';
     ['python-memcached',
      'django-tagging',
-     'twisted',
      'carbon',
      'whisper',
-     'graphite-web']:
+     'graphite-web',
+     'python-openid',
+     'django-openid-auth']:
       provider => 'pip',
-      ensure   => latest;
+      ensure   => installed;
   }
 
   file {
@@ -74,13 +78,14 @@ class statsd::graphite {
   include uwsgi
 
   uwsgi::resource::app { "django":
-    options        => {
-      "module"     => "django.core.handlers.wsgi:WSGIHandler()",
-      "socket"     => "127.0.0.1:3031",
-      "processes"  => "1",
-      "master"     => "true",
-      "chdir"      => "/opt/graphite/webapp",
-      "env"        => "DJANGO_SETTINGS_MODULE=graphite.settings",
+    options         => {
+      "module"      => "django.core.handlers.wsgi:WSGIHandler()",
+      "socket"      => "127.0.0.1:3031",
+      "processes"   => "1",
+      "master"      => "true",
+      "chdir"       => "/opt/graphite/webapp",
+      "env"         => "DJANGO_SETTINGS_MODULE=graphite.settings",
+      "buffer-size" => "8196",
     }
   }
 
