@@ -1,5 +1,5 @@
 name         'adcade-statsd'
-version      '0.2.0'
+version      '0.2.1'
 summary      'Install statsd and graphite'
 description  'Install statsd and graphite'
 author       'Yangming Huang'
