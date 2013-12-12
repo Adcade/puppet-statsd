@@ -9,7 +9,7 @@ class statsd::graphite {
     'libcairo2-dev',
     'python-cairo',
     'pkg-config',
-    'nginx',
+    #'nginx',
   ]
 
   package { $apt_pkgs:
@@ -71,6 +71,7 @@ class statsd::graphite {
 
   exec { 'carbon-cache':
     command => 'python ./bin/carbon-cache.py start',
+    unless  => 'python ./bin/carbon-cache.py status',
     cwd     => '/opt/graphite',
     require => [Exec['init db'], File['carbon.conf', 'local_settings.py', 'storage-schemas.conf']], #, 'graphite.db']],
   }
@@ -89,31 +90,20 @@ class statsd::graphite {
     }
   }
 
-  file {
-    'graphite.nginx':
-      ensure  => file,
-      path    => '/etc/nginx/sites-available/graphite',
-      content => template('statsd/graphite.nginx.erb'),
-      require => Package['nginx'];
-    #'uwsgi_params':
-    #  ensure  => file,
-    #  path    => '/etc/nginx/uwsgi_params',
-    #  content => template('statsd/uwsgi_params.erb'),
-    #  require => Package['nginx'];
-  } ->
+  include nginx
 
-  file {
-    'enable nginx graphite site':
-      ensure => link,
-      path   => '/etc/nginx/sites-enabled/graphite',
-      source => '/etc/nginx/sites-available/graphite';
-    'disable nginx default site':
-      ensure => absent,
-      path   => '/etc/nginx/sites-enabled/default';
-  } ->
+  nginx::site {
+  "default":
+    ensure => absent;
+  "graphite":
+    ensure  => present,
+    content => template('statsd/graphite.nginx.erb'),
+  }
 
-  service {'nginx':
-    ensure => running,
+  exec { "/usr/sbin/nginx -s reload":
+    path      => ["/usr/bin/", "/usr/sbin", "/bin"],
+    user      => root,
+    subscribe => Nginx::Site["graphite"],
   }
 
 }
