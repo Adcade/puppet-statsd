@@ -1,9 +1,9 @@
 class statsd::graphite {
   $apt_pkgs = [
-    'python',
+#    'python',
     'memcached',
-    'python-dev',
-    'python-pip',
+#    'python-dev',
+#    'python-pip',
     'sqlite3',
     'libcairo2',
     'libcairo2-dev',
